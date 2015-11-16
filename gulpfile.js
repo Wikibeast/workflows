@@ -14,9 +14,10 @@ var jsSources = [
 	'components/scripts/tagline.js',
 	'components/scripts/template.js'
 ];
-var sassSources = ['components/sass/style.scss'];			//note that this is the 
-														//only necessary sass file because the 
-														//partials are imported here
+var jsonSources = ['builds/development/js/*.json'];
+var htmlSources = ['builds/development/index.html'];
+var sassSources = ['components/sass/style.scss'];			
+//note that this is the only necessary sass file because the partials are imported here
 
 gulp.task('coffee', function() {
 	gulp.src(coffeeSources)
@@ -46,9 +47,11 @@ gulp.task('compass', function() {
 });
 
 gulp.task('watch', function() {
-	gulp.watch(coffeeSources, ['coffee'])
-	gulp.watch(jsSources, ['js'])
-	gulp.watch('components/sass/*.scss', ['compass'])
+	gulp.watch(coffeeSources, ['coffee']);
+	gulp.watch(jsSources, ['js']);
+	gulp.watch('components/sass/*.scss', ['compass']);
+	gulp.watch(htmlSources, ['html']);
+	gulp.watch(jsonSources, ['json']);
 });
 
 gulp.task('connect', function() {
@@ -58,4 +61,14 @@ gulp.task('connect', function() {
 	});
 });
 
-gulp.task('default', ['coffee', 'js', 'compass', 'connect', 'watch']);
+gulp.task('html', function() {
+	gulp.src(htmlSources)
+		.pipe(connect.reload())
+});
+
+gulp.task('json', function() {
+	gulp.src(jsonSources)
+		.pipe(connect.reload())
+});
+
+gulp.task('default', ['coffee', 'js', 'compass', 'json', 'html', 'connect', 'watch']);
