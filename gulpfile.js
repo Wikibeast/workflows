@@ -35,8 +35,10 @@ gulp.task('compass', function() {
 		.pipe(compass({									//put all your Sass config here instead of in a file
 			sass: 'components/sass',
 			image: 'builds/development/images',
-			style: 'expanded'
+			style: 'expanded'							//add 'require' setting for imports like Bourbon or Susy
 		}))
 		.on('error', gutil.log)
 		.pipe(gulp.dest('builds/development/css'))
 });
+
+gulp.task('default', ['coffee', 'js', 'compass']);
