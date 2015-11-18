@@ -1,0 +1,1 @@
+#This file and comment is here as a hack. For some reason my compass style settings would not update unless this config file was modified. So I have a gulp replace task that runs and replaces the hash at the beginning of this comment with an identical hash. Do not remove this comment and do not remove this hash.

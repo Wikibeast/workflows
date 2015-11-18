@@ -4,20 +4,47 @@ var gulp = require('gulp'),
 	browserify = require('gulp-browserify'),
 	compass = require('gulp-compass'),
 	connect = require('gulp-connect'),
+	replace = require('gulp-replace'),
 	concat = require('gulp-concat');
 
-var coffeeSources = ['components/coffee/tagline.coffee'];			//use an array variable just 
-																	//in case you want to add more later
-var jsSources = [
+var env,
+	sassSources,
+	coffeeSources,
+	jsSources,
+	jsonSources,
+	htmlSources,
+	sassSources,
+	outputDir,
+	sassStyle;
+
+env = process.env.NODE_ENV || 'development';
+
+if (env==='development') {
+	outputDir = 'builds/development/'
+	sassStyle = 'expanded';
+} else {
+	outputDir = 'builds/production/'
+	sassStyle = 'compressed';
+}
+
+coffeeSources = ['components/coffee/tagline.coffee'];//use an array variable in case you want to add		
+jsSources = [
 	'components/scripts/rclick.js',
 	'components/scripts/pixgrid.js',
 	'components/scripts/tagline.js',
 	'components/scripts/template.js'
 ];
-var jsonSources = ['builds/development/js/*.json'];
-var htmlSources = ['builds/development/index.html'];
-var sassSources = ['components/sass/style.scss'];			
+jsonSources = [outputDir + 'js/*.json'];
+htmlSources = [outputDir + '*.html'];
+sassSources = ['components/sass/style.scss'];			
 //note that this is the only necessary sass file because the partials are imported here
+
+/* This replace task is a hack to get the config file to update. For some reason unless this config file was updated, my compass settings would not be applied */
+gulp.task('replace', function() {
+	gulp.src('config.rb')
+		.pipe(replace(/#/g, '#'))
+		.pipe(gulp.dest('./'))
+});
 
 gulp.task('coffee', function() {
 	gulp.src(coffeeSources)
@@ -30,19 +57,21 @@ gulp.task('js', function() {
 	gulp.src(jsSources)
 		.pipe(concat('script.js'))
 		.pipe(browserify())
-		.pipe(gulp.dest('builds/development/js'))
+		.pipe(gulp.dest(outputDir + 'js'))
 		.pipe(connect.reload())							//reload the gulp-connect server
 });
 
 gulp.task('compass', function() {
 	gulp.src(sassSources)
-		.pipe(compass({									//put all your Sass config here instead of in a file
+		.pipe(compass({
+			config_file: 'config.rb',
 			sass: 'components/sass',
-			image: 'builds/development/images',
-			style: 'expanded'							//add 'require' setting for imports like Bourbon or Susy
+			image: outputDir + 'images',
+			comments: true,
+			style: sassStyle
 		}))
 		.on('error', gutil.log)
-		.pipe(gulp.dest('builds/development/css'))
+		.pipe(gulp.dest(outputDir + 'css'))
 		.pipe(connect.reload())							//reload the gulp-connect server
 });
 
@@ -56,7 +85,7 @@ gulp.task('watch', function() {
 
 gulp.task('connect', function() {
 	connect.server({
-		root: 'builds/development/',
+		root: outputDir,
 		livereload: true
 	});
 });
@@ -71,4 +100,4 @@ gulp.task('json', function() {
 		.pipe(connect.reload())
 });
 
-gulp.task('default', ['coffee', 'js', 'compass', 'json', 'html', 'connect', 'watch']);
+gulp.task('default', ['replace', 'coffee', 'js', 'compass', 'json', 'html', 'connect', 'watch']);
